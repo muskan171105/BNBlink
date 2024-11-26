@@ -15,7 +15,10 @@ BNBLink is a Telegram Mini App that serves as a gateway to the BNB Chain, enabli
   - Send and receive tokens.  
   - Interact with decentralized applications (dApps).  
 - **Gasless Transactions**: Simplified transactions using meta-transaction technology.  
-- **User-Friendly Interface**: Intuitive UI designed for easy navigation within Telegram.  
+- **User-Friendly Interface**: Intuitive UI designed for easy navigation within Telegram.
+- **Telegram Authentication**: Securely log in using Telegram OAuth and receive a JWT for session management.  
+- **BNB Chain Connection**: View wallet balances on the BNB Chain using Web3.js integration.  
+
 
 ---
 
@@ -66,12 +69,47 @@ npm install
 
 ### **4. Configure Environment Variables**
 
-Create a .env file in the root directory and add the following:
+1. Create a .env file in the root directory and add the following:
 ```
 TELEGRAM_BOT_TOKEN=your_bot_token
 BNB_RPC_URL=https://data-seed-prebsc-1-s1.binance.org:8545/
 JWT_SECRET=your_secret_key
 ```
+2. Ensure `.env` is added to `.gitignore` to protect sensitive information.
+
+#### **Endpoints**  
+Add a new section to describe the API endpoints:  
+
+### **API Endpoints**  
+
+1. **Telegram Authentication**  
+   - **Endpoint**: `POST /auth/telegram`  
+   - **Description**: Verifies Telegram login data and returns a JWT for authenticated users.  
+   - **Request Body**:  
+     ```json
+     {
+       "id": "user_id",
+       "username": "telegram_username",
+       "hash": "telegram_hash",
+       "...other_data": "values"
+     }
+     ```  
+   - **Response**:  
+     ```json
+     {
+       "token": "jwt_token"
+     }
+     ```  
+
+2. **Get Wallet Balance**  
+   - **Endpoint**: `GET /balance/:address`  
+   - **Description**: Fetches the balance of a wallet address on the BNB Chain.  
+   - **Response**:  
+     ```json
+     {
+       "balance": "wallet_balance_in_ether"
+     }
+     ```  
 
 ### **5. Start the Application**
 ```
