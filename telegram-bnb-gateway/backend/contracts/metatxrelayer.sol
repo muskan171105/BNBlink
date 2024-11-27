@@ -79,10 +79,13 @@ contract GaslessTransaction {
     }
 
     /**
-     * @dev Splits a signature into its r, s, and v components.
-     * @param sig The signature to split.
-     * @return r, s, and v components of the signature.
-     */
+    * @dev Splits a signature into its r, s, and v components.
+    * @param sig The signature to split.
+    * @return r The `r` component of the signature.
+    * @return s The `s` component of the signature.
+    * @return v The `v` component of the signature.
+    */
+
     function splitSignature(bytes memory sig)
         public
         pure
