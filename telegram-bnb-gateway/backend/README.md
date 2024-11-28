@@ -110,7 +110,6 @@ BNBLink is a backend service for managing wallets and transactions on the Binanc
 
 **Request Header**:
 ```bash
-Copy code
 Authorization: Bearer <your_jwt_token_here>
 ```
 
