@@ -88,16 +88,14 @@ BNBLink is a backend service for managing wallets and transactions on the Binanc
 **Description**: Logs in a user and returns a JWT token.
 
 **Request Body**:
-```
-json
+```json
 {
   "username": "exampleUsername",
   "password": "examplePassword"
 }
 ```
 **Response**:
-```
-json
+```json
 {
   "message": "Login successful",
   "token": "your_jwt_token_here"
@@ -111,15 +109,13 @@ json
 **Description**: Creates a new wallet. Requires a valid JWT token in the Authorization header.
 
 **Request Header**:
-```
-bash
+```bash
 Copy code
 Authorization: Bearer <your_jwt_token_here>
 ```
 
 **Response**:
-```
-json
+```json
 {
   "message": "Wallet created successfully",
   "address": "generated_wallet_address_here"
@@ -133,14 +129,12 @@ json
 **Description**: Fetches wallet information (address balance). Requires a valid JWT token in the Authorization header.
 
 **Request Header**:
-```
-bash
+```bash
 Authorization: Bearer <your_jwt_token_here>
 ```
 
 **Response**:
-```
-json
+```json
 {
   "address": "wallet_address_here",
   "balance": "wallet_balance_here"
