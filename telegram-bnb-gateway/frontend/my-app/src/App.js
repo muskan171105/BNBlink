@@ -5,6 +5,8 @@ import Login from './Login';
 import Wallet from './Wallet';
 import Transfer from './Transfer';
 import DApp from './DApp'; // Import the DApp component
+import './App.css';
+
 
 const App = () => {
     return (
