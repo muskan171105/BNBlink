@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { authenticate } = require('../middlewares/auth');
 const Web3 = require('web3');
 
 const router = express.Router(); // Use a router instead of app
