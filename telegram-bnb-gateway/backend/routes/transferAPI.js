@@ -1,5 +1,10 @@
-const Web3 = require('web3');
+const express = require('express');
 const { body, validationResult } = require('express-validator');
+const Web3 = require('web3');
+
+const router = express.Router(); // Use a router instead of app
+const web3 = new Web3('https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'); // Replace with your Web3 provider
+
 const ERC20_ABI = [
   {
     constant: false,
@@ -14,7 +19,7 @@ const ERC20_ABI = [
 ];
 
 // Token Transfer API
-app.post(
+router.post(
   '/transfer',
   [
     body('senderPrivateKey').isString().notEmpty(),
@@ -71,3 +76,5 @@ app.post(
     }
   }
 );
+
+module.exports = router; // Export the router
