@@ -2,10 +2,12 @@ const express = require('express');
 const dotenv = require('dotenv');
 const walletRoutes = require('./routes/wallet');
 const transactionRoutes = require('./routes/transaction');
-const transferRoutes = require('./routes/transferAPI');
+const transferRoutes = require('./routes/transfer');
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
+const transferRoutes = require('./routes/transfer');
+
 
 dotenv.config();
 
