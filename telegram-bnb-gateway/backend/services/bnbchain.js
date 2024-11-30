@@ -1,5 +1,5 @@
 // Import Web3 using the correct syntax for the module system you're using
-const Web3 = require('web3'); // Make sure Web3 is correctly imported
+const Web3 = require('web3'); // Ensure Web3 is correctly imported
 require('dotenv').config(); // Ensure environment variables from .env file are available
 
 // Fetch the Binance Smart Chain RPC URL from the environment variables
@@ -43,5 +43,53 @@ async function getBalance(address) {
   }
 }
 
-// Export the getBalance function for use in other parts of the project
-module.exports = { getBalance };
+/**
+ * Fetches the transaction count (nonce) for a specified wallet address.
+ * 
+ * @param {string} address - The wallet address for which the transaction count is to be retrieved.
+ * @returns {Promise<number>} - The transaction count (nonce).
+ * @throws {Error} - Throws an error if the provided address is invalid or the fetch operation fails.
+ */
+async function getTransactionCount(address) {
+  try {
+    // Validate the wallet address format
+    if (!web3.utils.isAddress(address)) {
+      throw new Error('Invalid wallet address.');
+    }
+
+    // Fetch the transaction count (nonce) for the specified address
+    const transactionCount = await web3.eth.getTransactionCount(address);
+    return transactionCount;
+  } catch (error) {
+    // Log and throw errors with enhanced clarity
+    console.error(`Error fetching transaction count for address ${address}: ${error.message}`);
+    throw new Error('Failed to fetch the transaction count. Ensure the address is valid.');
+  }
+}
+
+/**
+ * Verifies if a given wallet address exists and has been used for transactions.
+ * 
+ * @param {string} address - The wallet address to verify.
+ * @returns {Promise<boolean>} - True if the address exists, false otherwise.
+ * @throws {Error} - Throws an error if the provided address is invalid.
+ */
+async function verifyAddressExists(address) {
+  try {
+    // Validate the wallet address format
+    if (!web3.utils.isAddress(address)) {
+      throw new Error('Invalid wallet address.');
+    }
+
+    // Check if the address has a non-zero transaction count
+    const transactionCount = await getTransactionCount(address);
+    return transactionCount > 0;
+  } catch (error) {
+    // Log and throw errors with enhanced clarity
+    console.error(`Error verifying address existence for ${address}: ${error.message}`);
+    throw new Error('Failed to verify the wallet address existence.');
+  }
+}
+
+// Export all utility functions for use in other parts of the project
+module.exports = { getBalance, getTransactionCount, verifyAddressExists };
