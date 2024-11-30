@@ -151,8 +151,4 @@ We welcome contributions! To contribute:
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## **Contact**
-For queries or feedback, reach out at your-email@example.com or connect on Telegram: @yourusername.
-
-## **Acknowledgments**
-
-Replace placeholders like `yourusername`, `your_bot_token`, `your_secret_key`, and `your-email@example.com` with the relevant project details.
+For queries or feedback, reach out at muskansrivastav517@gmail.com or connect on Linkedin: https://www.linkedin.com/in/muskan-srivastav-054b2027a/
