@@ -69,4 +69,4 @@ const fetchTransactionHistory = async (address, limit, offset) => {
   return transactions.slice(offset, offset + limit);
 };
 
-module.exports = { getTransactionHistory };
+module.exports = { getTransactionHistory, fetchTransactionHistory };

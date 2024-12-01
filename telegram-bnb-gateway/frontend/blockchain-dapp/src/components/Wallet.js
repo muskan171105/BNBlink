@@ -1,23 +1,59 @@
 import React, { useState } from 'react';
+import fetchBalance from '../utils/fetchBalance'; // Import the balance-fetching function
 
 const Wallet = ({ connectWallet, balance }) => {
-  const [privateKey, setPrivateKey] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
+  const [tokenAddress, setTokenAddress] = useState('');
+  const [localBalance, setLocalBalance] = useState(balance);
 
-  const handleConnect = () => {
-    connectWallet(privateKey);
+  // Function to fetch the balance when the user provides the wallet address
+  const fetchWalletBalance = async () => {
+    if (!walletAddress) {
+      alert('Please enter a wallet address');
+      return;
+    }
+
+    try {
+      // Fetch balance from fetchBalance function
+      const result = await fetchBalance(walletAddress, tokenAddress);
+      setLocalBalance(result); // Set the fetched balance
+    } catch (error) {
+      console.error('Error fetching balance:', error.message);
+    }
   };
 
   return (
     <div>
-      <h2>Wallet</h2>
+      <h1>Wallet Balance</h1>
+      
+      {/* Input for wallet address */}
       <input
         type="text"
-        placeholder="Enter Private Key"
-        value={privateKey}
-        onChange={(e) => setPrivateKey(e.target.value)}
+        placeholder="Enter Wallet Address"
+        value={walletAddress}
+        onChange={(e) => setWalletAddress(e.target.value)}
       />
-      <button onClick={handleConnect}>Connect Wallet</button>
-      {balance && <p>Balance: {balance} ETH</p>}
+      
+      {/* Input for token address (optional) */}
+      <input
+        type="text"
+        placeholder="Enter Token Address (Optional)"
+        value={tokenAddress}
+        onChange={(e) => setTokenAddress(e.target.value)}
+      />
+      
+      {/* Button to trigger balance fetching */}
+      <button onClick={fetchWalletBalance}>Get Balance</button>
+      
+      {/* Display the balance */}
+      {localBalance && (
+        <p>
+          Balance: {localBalance} {tokenAddress ? 'Token' : 'BNB'}
+        </p>
+      )}
+      
+      {/* Existing balance from parent component */}
+      {balance && <p>Connected Wallet Balance: {balance} BNB</p>}
     </div>
   );
 };

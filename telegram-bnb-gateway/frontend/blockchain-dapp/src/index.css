@@ -1,0 +1,63 @@
+/* General Body Styling */
+body {
+  background-color: #f8f9fa;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container Styling */
+.container {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  background-color: #ffffff;
+  text-align: center;
+}
+
+/* Button Styling */
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Input Styling */
+input {
+  border-radius: 5px;
+  padding: 10px;
+}
+
+/* Row Gutter for Spacing */
+.row.g-2 > * {
+  padding: 5px;
+}
+
+/* Spacing for headings and sections */
+.mb-3, .mb-4 {
+  margin-bottom: 20px;
+}
+
+.mt-2 {
+  margin-top: 10px;
+}
+
+/* Text Center Alignment */
+.text-center {
+  text-align: center;
+}
