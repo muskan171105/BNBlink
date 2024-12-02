@@ -1,15 +1,21 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-    const MetaTxRelayer = await ethers.getContractFactory("GaslessTransaction");
-    console.log("Deploying MetaTxRelayer...");
-    const metaTxRelayer = await MetaTxRelayer.deploy();
+  // Get the account to deploy the contract
+  const [deployer] = await ethers.getSigners();
+  console.log("Deploying contracts with the account:", deployer.address);
 
-    await metaTxRelayer.deployed();
-    console.log("MetaTxRelayer deployed to:", metaTxRelayer.address);
+  // Get the ContractFactory for the compiled GaslessTransaction contract
+  const GaslessTransaction = await ethers.getContractFactory("GaslessTransaction");
+
+  // Deploy the contract
+  const gaslessTransaction = await GaslessTransaction.deploy();
+  console.log("GaslessTransaction contract deployed to:", gaslessTransaction.address);
 }
 
-main().catch((error) => {
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
     console.error(error);
-    process.exitCode = 1;
-});
+    process.exit(1);
+  });
