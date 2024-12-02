@@ -7,7 +7,6 @@ const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
 
-
 dotenv.config();
 
 // Check for critical environment variables
