@@ -2,6 +2,8 @@ const { authenticate } = require('../middlewares/auth');
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Web3 = require('web3');
+const errorHandler=require('../middlewares/errorHandler');
+const logger= require('../middlewares/errorHandler');
 
 const router = express.Router();
 const web3 = new Web3(process.env.RPC_URL);
@@ -51,5 +53,8 @@ router.post(
     }
   }
 );
+
+app.use(errorHandler);
+app.use(logger);
 
 module.exports = router;

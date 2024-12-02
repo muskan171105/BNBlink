@@ -1,4 +1,4 @@
-import Web3 from 'web3';
+const Web3 = require('web3');
 
 // Initialize Web3 for Binance Smart Chain
 const web3 = new Web3('https://bsc-dataseed.binance.org/'); // BSC Mainnet RPC URL
@@ -40,4 +40,4 @@ const fetchBalance = async (walletAddress, tokenAddress = null) => {
   }
 };
 
-export default fetchBalance;
+module.exports = fetchBalance;
