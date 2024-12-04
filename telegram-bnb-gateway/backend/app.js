@@ -3,24 +3,32 @@ const dotenv = require('dotenv');
 const walletRoutes = require('./routes/wallet');
 const transactionRoutes = require('./routes/transaction');
 const transferRoutes = require('./routes/transfer');
+const marketAnalysisRoutes = require('./routes/marketAnalysis'); // Import the market analysis routes
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
 
+// Load environment variables
 dotenv.config();
 
-// Check for critical environment variables
+// Validate critical environment variables
 if (!process.env.JWT_SECRET || !process.env.RPC_URL) {
-  throw new Error('Critical environment variables missing: Ensure JWT_SECRET and RPC_URL are set in your .env file.');
+  throw new Error(
+    'Critical environment variables missing: Ensure JWT_SECRET and RPC_URL are set in your .env file.'
+  );
 }
 
 // Initialize Express application
 const app = express();
-app.use(express.json()); // Enable parsing JSON request bodies
-app.use(logger); // Custom middleware for logging
+
+// Middleware to parse JSON request bodies
+app.use(express.json());
+
+// Custom middleware for logging
+app.use(logger);
 
 /**
- * Example route to fetch the balance of a wallet address using the bnbchain service.
+ * Route to fetch the balance of a wallet address using the bnbchain service.
  */
 app.get('/wallet/balance/:address', async (req, res) => {
   const { address } = req.params;
@@ -37,6 +45,7 @@ app.get('/wallet/balance/:address', async (req, res) => {
 app.use('/wallet', walletRoutes); // Routes for wallet-related operations
 app.use('/transactions', transactionRoutes); // Routes for transaction-related operations
 app.use('/transfer', transferRoutes); // Routes for fund transfer operations
+app.use('/market', marketAnalysisRoutes); // Register market analysis routes
 
 // Fallback route for undefined paths
 app.use((req, res) => {
@@ -46,4 +55,5 @@ app.use((req, res) => {
 // Global error handling middleware
 app.use(errorHandler);
 
+// Export the app instance
 module.exports = app;

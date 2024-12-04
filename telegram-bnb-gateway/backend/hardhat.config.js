@@ -6,7 +6,7 @@ module.exports = {
   solidity: "0.8.27",
   networks: {
     bscTestnet: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545/", // Testnet RPC URL
+      url: "https://opbnb-testnet-rpc.bnbchain.org", // Testnet RPC URL
       accounts: [`0x${process.env.PRIVATE_KEY}`], // Use private key from .env file
     },
   },
