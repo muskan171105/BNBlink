@@ -4,6 +4,7 @@ const walletRoutes = require('./routes/wallet');
 const transactionRoutes = require('./routes/transaction');
 const transferRoutes = require('./routes/transfer');
 const marketAnalysisRoutes = require('./routes/marketAnalysis'); // Import the market analysis routes
+const Alerts=require('./routes/alerts')
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
@@ -46,7 +47,7 @@ app.use('/wallet', walletRoutes); // Routes for wallet-related operations
 app.use('/transactions', transactionRoutes); // Routes for transaction-related operations
 app.use('/transfer', transferRoutes); // Routes for fund transfer operations
 app.use('/market', marketAnalysisRoutes); // Register market analysis routes
-
+app.use('/alerts',Alerts)
 // Fallback route for undefined paths
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found. Please check the endpoint.' });
