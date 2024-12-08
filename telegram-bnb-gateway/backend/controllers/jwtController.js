@@ -16,12 +16,19 @@ const verifyToken = (token) => {
 };
 
 // Refresh Token
-const refreshToken = (req, res) => {
+const refreshToken = async (req, res) => {
     const { token } = req.body;
 
     try {
-        const decoded = jwt.verify(token, secretKey); // Verify old token
-        const newToken = generateToken({ id: decoded.id, email: decoded.email }); // Generate new token
+        const decoded = jwt.verify(token, secretKey);
+
+        // Optional: Validate user against database
+        // const isValidUser = await validateUser(decoded.id, decoded.email);
+        // if (!isValidUser) {
+        //     return res.status(403).json({ error: 'User no longer exists or is inactive.' });
+        // }
+
+        const newToken = generateToken({ id: decoded.id, email: decoded.email });
         res.json({ token: newToken });
     } catch (err) {
         res.status(401).json({ error: 'Invalid or expired refresh token' });
@@ -31,11 +38,10 @@ const refreshToken = (req, res) => {
 // Check if Token is Expired
 const isTokenExpired = (token) => {
     try {
-        const decoded = jwt.verify(token, secretKey);
-        return false; // Not expired
+        jwt.verify(token, secretKey);
+        return false; // Token is valid and not expired
     } catch (err) {
-        if (err.name === 'TokenExpiredError') return true; // Expired
-        throw err; // Other errors (e.g., invalid token)
+        return err.name === 'TokenExpiredError'; // True if expired
     }
 };
 
