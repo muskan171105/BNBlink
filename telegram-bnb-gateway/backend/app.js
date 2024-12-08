@@ -5,13 +5,12 @@ const transactionRoutes = require('./routes/transaction');
 const transferRoutes = require('./routes/transfer');
 const marketAnalysisRoutes = require('./routes/marketAnalysis'); // Import the market analysis routes
 const Alerts = require('./routes/alerts'); // Import the alerts routes
-const buySellRoutes = require('./routes/buySell'); // Import buy/sell BNB routes
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
-const { performMarketAnalysis } = require('./services/marketAnalysis'); // Market analysis service
-const { handleTransactionHistory } = require('./services/transactionHistory'); // Transaction history service
-const { subscribeAlerts, unsubscribeAlerts } = require('./services/alerts'); // Alerts subscription service
+const { performMarketAnalysis } = require('./routes/marketAnalysis'); // Market analysis service
+const { handleTransactionHistory } = require('./routes/transaction'); // Transaction history service
+const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription service
 
 // Load environment variables
 dotenv.config();
@@ -101,14 +100,10 @@ app.post('/alerts/unsubscribe', async (req, res) => {
   }
 });
 
-/**
- * Route to handle buy and sell BNB functionality.
- */
-app.use('/buy-sell', buySellRoutes); // Register routes for buying/selling BNB
 
 // Register route modules
 app.use('/wallet', walletRoutes); // Routes for wallet-related operations
-app.use('/transactions', transactionRoutes); // Routes for transaction-related operations
+app.use('/transaction', transactionRoutes); // Routes for transaction-related operations
 app.use('/transfer', transferRoutes); // Routes for fund transfer operations
 app.use('/market', marketAnalysisRoutes); // Register market analysis routes
 app.use('/alerts', Alerts); // Register alerts routes

@@ -1,16 +1,15 @@
 const express = require('express');
-const { fetchMarketData } = require('../services/marketDataService');
+const { fetchBNBData } = require('../services/marketDataService');
 
 const router = express.Router();
 
 /**
- * Endpoint to fetch market data for a given pair.
- * @route GET /alerts/data/:pair
+ * Endpoint to fetch market data for Binance Coin (BNB).
+ * @route GET /alerts/data/bnb
  */
-router.get('/data/:pair', async (req, res) => {
-  const { pair } = req.params;
+router.get('/data/bnb', async (req, res) => {
   try {
-    const marketData = await fetchMarketData(pair);
+    const marketData = await fetchBNBData(); // Call the BNB-specific function
     res.status(200).json({ success: true, data: marketData });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -18,21 +17,20 @@ router.get('/data/:pair', async (req, res) => {
 });
 
 /**
- * Endpoint to set alerts for a cryptocurrency pair.
+ * Endpoint to set alerts for a cryptocurrency pair (BNB only for now).
  * @route POST /alerts
  */
 router.post('/', async (req, res) => {
-  const { pair, priceThreshold, alertType } = req.body;
-  if (!pair || !priceThreshold || !alertType) {
+  const { priceThreshold, alertType } = req.body;
+  if (!priceThreshold || !alertType) {
     return res.status(400).json({ success: false, message: 'Missing required fields.' });
   }
 
-  // Add logic to store alert details in a database or in-memory store
-  // (e.g., save to Redis, Firebase, or a local data structure).
+  // Logic for setting alerts (e.g., saving them to a database or cache)
 
   res.status(201).json({
     success: true,
-    message: `Alert for ${pair} has been set at ${priceThreshold} (${alertType}).`,
+    message: `Alert for BNB has been set at ${priceThreshold} (${alertType}).`,
   });
 });
 
