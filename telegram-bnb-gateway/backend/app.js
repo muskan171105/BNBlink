@@ -3,22 +3,23 @@ const dotenv = require('dotenv');
 const walletRoutes = require('./routes/wallet');
 const transactionRoutes = require('./routes/transaction');
 const transferRoutes = require('./routes/transfer');
-const marketAnalysisRoutes = require('./routes/marketAnalysis'); // Import the market analysis routes
-const Alerts = require('./routes/alerts'); // Import the alerts routes
+const marketAnalysisRoutes = require('./routes/marketAnalysis'); // Market analysis routes
+const alertsRoutes = require('./routes/alerts'); // Alerts routes
 const logger = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
-const { getBalance } = require('./services/bnbchain'); // Import getBalance from bnbchain.js
+const { getBalance } = require('./services/bnbchain'); // Get balance service
 const { performMarketAnalysis } = require('./routes/marketAnalysis'); // Market analysis service
-const { handleTransactionHistory } = require('./routes/transaction'); // Transaction history service
-const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription service
+const { getTransactionHistory } = require('./routes/transaction'); // Transaction history service
+const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription services
+const { authenticate } = require('./middlewares/authMiddleware'); // OAuth2.0 middleware
 
 // Load environment variables
 dotenv.config();
 
 // Validate critical environment variables
-if (!process.env.JWT_SECRET || !process.env.RPC_URL) {
+if (!process.env.JWT_SECRET || !process.env.RPC_URL || !process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
   throw new Error(
-    'Critical environment variables missing: Ensure JWT_SECRET and RPC_URL are set in your .env file.'
+    'Critical environment variables missing: Ensure JWT_SECRET, RPC_URL, CLIENT_ID, and CLIENT_SECRET are set in your .env file.'
   );
 }
 
@@ -30,6 +31,12 @@ app.use(express.json());
 
 // Custom middleware for logging
 app.use(logger);
+
+/**
+ * Middleware for OAuth2.0 authentication
+ * Apply to all routes requiring authentication
+ */
+app.use(authenticate);
 
 /**
  * Route to fetch the balance of a wallet address using the bnbchain service.
@@ -59,15 +66,20 @@ app.get('/market/analyze', async (req, res) => {
 });
 
 /**
- * Route to handle transaction history request.
+ * Route to fetch transaction history of a wallet.
  */
-app.get('/transactions/:userId', async (req, res) => {
-  const { userId } = req.params;
+app.get('/transactions/:address', async (req, res) => {
+  const { address } = req.params;
+  const { limit, offset } = req.query;
+
   try {
-    const transactionHistory = await handleTransactionHistory(userId);
-    res.json({ transactionHistory });
+    const transactionHistory = await getTransactionHistory(address, {
+      limit: parseInt(limit, 10) || 50,
+      offset: parseInt(offset, 10) || 0,
+    });
+    res.json(transactionHistory);
   } catch (error) {
-    console.error(`Error fetching transaction history for user ${userId}:`, error.message);
+    console.error(`Error fetching transaction history for address ${address}:`, error.message);
     res.status(500).json({ error: 'Failed to fetch transaction history. Please try again.' });
   }
 });
@@ -100,13 +112,12 @@ app.post('/alerts/unsubscribe', async (req, res) => {
   }
 });
 
-
 // Register route modules
 app.use('/wallet', walletRoutes); // Routes for wallet-related operations
 app.use('/transaction', transactionRoutes); // Routes for transaction-related operations
 app.use('/transfer', transferRoutes); // Routes for fund transfer operations
 app.use('/market', marketAnalysisRoutes); // Register market analysis routes
-app.use('/alerts', Alerts); // Register alerts routes
+app.use('/alerts', alertsRoutes); // Register alerts routes
 
 // Fallback route for undefined paths
 app.use((req, res) => {

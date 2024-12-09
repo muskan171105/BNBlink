@@ -1,7 +1,7 @@
 const express = require('express');
 const { createWallet, getWalletInfo } = require('../controllers/walletController');
 const { getBalance } = require('../services/bnbchain');
-const { authenticate } = require('../middlewares/auth');
+const { authenticate } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 // Route to create a wallet (protected route with authentication)

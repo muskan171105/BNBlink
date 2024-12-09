@@ -1,13 +1,10 @@
 const express = require('express');
 const { getTransactionHistory } = require('../controllers/transactionController');
-const { authenticate } = require('../middlewares/auth');
-const errorHandler = require('../middlewares/errorHandler');
-const logger = require('../middlewares/logger');
+const { authenticate } = require('../middlewares/authMiddleware'); // Ensure this middleware checks JWT and attaches user info
 
 const router = express.Router();
 
-// Route to fetch transaction history (protected route)
+// Route to get transaction history of a wallet address
 router.get('/:address', authenticate, getTransactionHistory);
 
-// Export the router
 module.exports = router;
