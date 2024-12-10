@@ -77,17 +77,26 @@ const fetchBlocksInBatches = async (address, limit, offset) => {
 /**
  * Filters transactions that match the given address.
  */
-const filterTransactions = (transactions, address) =>
-  transactions
-    .filter(tx => tx.from === address || tx.to === address)
-    .map(tx => ({
-      transactionHash: tx.hash,
-      from: tx.from,
-      to: tx.to,
-      value: web3.utils.fromWei(tx.value, 'ether'),
-      timestamp: tx.timestamp || null,
-      tokenType: tx.input === '0x' ? 'Native' : 'ERC-20',
-    }));
+const filterTransactions = async (transactions, address) => {
+  const filteredTransactions = [];
+
+  for (const tx of transactions) {
+    if (tx.from === address || tx.to === address) {
+      const timestamp = tx.timestamp || (tx.blockNumber ? (await web3.eth.getBlock(tx.blockNumber)).timestamp : null);
+      filteredTransactions.push({
+        transactionHash: tx.hash,
+        from: tx.from,
+        to: tx.to,
+        value: web3.utils.fromWei(tx.value, 'ether'),
+        timestamp,
+        tokenType: tx.input === '0x' ? 'Native' : 'ERC-20',
+      });
+    }
+  }
+
+  return filteredTransactions;
+};
+
 
 /**
  * Paginates the data array based on offset and limit.

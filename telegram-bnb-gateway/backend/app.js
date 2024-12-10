@@ -12,6 +12,7 @@ const { performMarketAnalysis } = require('./routes/marketAnalysis'); // Market 
 const { getTransactionHistory } = require('./routes/transaction'); // Transaction history service
 const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription services
 const { authenticate } = require('./authentication'); // Authentication middleware
+const jwt=require('jsonwebtoken');
 
 // Load environment variables
 dotenv.config();
@@ -116,6 +117,28 @@ app.post('/alerts/unsubscribe', async (req, res) => {
   }
 });
 
+// Example login route to generate a token
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  // Replace with your actual user authentication logic
+  if (username === 'testuser' && password === 'password123') {
+    const payload = {
+      username,
+      walletAddress: '0xDe9f03c92a153e677C3b9c76309542358B2b6aF2', // Replace with actual wallet address
+    };
+
+    // Generate a token (use a strong secret from your .env file)
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Log the generated token for debugging purposes
+    console.log('Generated Token for user', username, ':', token);
+
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: 'Invalid username or password' });
+  }
+});
 // Register route modules
 app.use('/wallet', walletRoutes); // Routes for wallet-related operations
 app.use('/transaction', transactionRoutes); // Routes for transaction-related operations

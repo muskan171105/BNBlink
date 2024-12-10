@@ -18,14 +18,21 @@ const users = []; // Example in-memory user store (replace with DB logic)
 function authenticate(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
+    console.log('No token provided.'); // Log for missing token
     return res.status(401).json({ error: 'Access denied. No token provided.' });
   }
 
   try {
     const verified = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Log the token and the decoded payload
+    console.log('Received Token:', token);
+    console.log('Decoded Payload:', verified);
+
     req.user = verified;
     next();
   } catch (error) {
+    console.error('Invalid Token:', error.message); // Log invalid token error
     res.status(403).json({ error: 'Invalid token.' });
   }
 }
@@ -46,6 +53,7 @@ router.post('/register', async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   users.push({ username, password: hashedPassword });
+  console.log('User registered:', username); // Log registration
   res.status(201).json({ message: 'User registered successfully.' });
 });
 
@@ -64,7 +72,12 @@ router.post('/login', async (req, res) => {
   }
 
   const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+  // Log the generated token for debugging
+  console.log('Generated Token for user', username, ':', token);
+
   res.json({ message: 'Login successful.', token });
 });
 
 module.exports = { router, authenticate };
+    
