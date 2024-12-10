@@ -1,16 +1,15 @@
 const web3 = require('../utils/web3Utils');
-const { savePrivateKeyToDatabase } = require('../utils/encryption');
 
 const createWallet = async (req, res) => {
   try {
     const wallet = web3.eth.accounts.create();
     const { address, privateKey } = wallet;
 
-    await savePrivateKeyToDatabase(address, privateKey);
-
+    // Sending the private key in the response for the user to save securely.
     res.status(201).json({
       message: 'Wallet created successfully',
       address,
+      privateKey,
     });
   } catch (error) {
     console.error('Error creating wallet:', error.message);

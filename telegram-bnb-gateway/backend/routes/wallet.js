@@ -1,24 +1,42 @@
 const express = require('express');
 const { createWallet, getWalletInfo } = require('../controllers/walletController');
 const { getBalance } = require('../services/bnbchain');
-const { authenticate } = require('../middlewares/authMiddleware');
+
 const router = express.Router();
 
-// Route to create a wallet (protected route with authentication)
-router.post('/create', authenticate, createWallet);
+// Debugging to ensure functions are defined
+console.log('createWallet:', createWallet);
+console.log('getWalletInfo:', getWalletInfo);
+console.log('getBalance:', getBalance);
 
-// Route to get wallet information (protected route with authentication)
-router.get('/:address', authenticate, getWalletInfo);
-
-// Route to get the balance of a wallet address (protected route with authentication)
-router.get('/balance/:address', authenticate, async (req, res) => {
-  const address = req.params.address;
-
+// Route to create a wallet
+router.post('/create', async (req, res) => {
   try {
-    const balance = await getBalance(address);
+    await createWallet(req, res);
+  } catch (error) {
+    console.error('Error in /create route:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Route to get wallet info
+router.get('/info/:address', async (req, res) => {
+  try {
+    await getWalletInfo(req, res);
+  } catch (error) {
+    console.error('Error in /info/:address route:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Route to get wallet balance
+router.get('/balance/:address', async (req, res) => {
+  try {
+    const balance = await getBalance(req, res);
     res.json({ balance });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error in /balance/:address route:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

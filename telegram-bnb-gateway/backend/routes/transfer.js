@@ -1,4 +1,3 @@
-const { authenticate } = require('../middlewares/auth');
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Web3 = require('web3');

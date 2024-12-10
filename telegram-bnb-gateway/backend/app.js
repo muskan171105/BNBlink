@@ -11,15 +11,15 @@ const { getBalance } = require('./services/bnbchain'); // Get balance service
 const { performMarketAnalysis } = require('./routes/marketAnalysis'); // Market analysis service
 const { getTransactionHistory } = require('./routes/transaction'); // Transaction history service
 const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription services
-const { authenticate } = require('./middlewares/authMiddleware'); // OAuth2.0 middleware
+const { authenticate } = require('./authentication'); // Authentication middleware
 
 // Load environment variables
 dotenv.config();
 
 // Validate critical environment variables
-if (!process.env.JWT_SECRET || !process.env.RPC_URL || !process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+if (!process.env.JWT_SECRET || !process.env.RPC_URL) {
   throw new Error(
-    'Critical environment variables missing: Ensure JWT_SECRET, RPC_URL, CLIENT_ID, and CLIENT_SECRET are set in your .env file.'
+    'Critical environment variables missing: Ensure JWT_SECRET and RPC_URL are set in your .env file.'
   );
 }
 
@@ -33,10 +33,14 @@ app.use(express.json());
 app.use(logger);
 
 /**
- * Middleware for OAuth2.0 authentication
- * Apply to all routes requiring authentication
+ * Apply authentication middleware globally
+ * Ensure authentication is applied only to routes requiring it
  */
-app.use(authenticate);
+app.use('/wallet', authenticate); // Apply to wallet routes
+app.use('/transaction', authenticate); // Apply to transaction routes
+app.use('/transfer', authenticate); // Apply to transfer routes
+app.use('/market', authenticate); // Apply to market analysis routes
+app.use('/alerts', authenticate); // Apply to alerts routes
 
 /**
  * Route to fetch the balance of a wallet address using the bnbchain service.

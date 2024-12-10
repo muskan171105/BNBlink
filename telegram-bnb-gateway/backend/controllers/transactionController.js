@@ -9,7 +9,6 @@ const getTransactionHistory = async (req, res) => {
   const offset = parseInt(req.query.offset, 10) || 0; // Default offset
 
   try {
-    // Validate the wallet address
     if (!web3.utils.isAddress(address)) {
       return res.status(400).json({ error: 'Invalid wallet address' });
     }
@@ -19,14 +18,12 @@ const getTransactionHistory = async (req, res) => {
       return res.status(403).json({ error: 'Access denied. Unauthorized wallet address.' });
     }
 
-    // Fetch transactions using batched block processing
     const transactions = await fetchBlocksInBatches(address, limit, offset);
 
     if (!transactions.length) {
       return res.status(404).json({ error: 'No transactions found for this wallet address.' });
     }
 
-    // Respond with transactions and metadata
     res.json({
       address,
       transactions,
@@ -53,38 +50,32 @@ const fetchBlocksInBatches = async (address, limit, offset) => {
   const transactions = [];
   const blockRanges = [];
 
-  // Split blocks into ranges for batching
   for (let i = startBlock; i <= currentBlock; i += batchSize) {
     blockRanges.push({ start: i, end: Math.min(i + batchSize - 1, currentBlock) });
   }
 
-  // Process each batch of blocks concurrently
   for (const range of blockRanges) {
     const blockPromises = [];
     for (let blockNumber = range.start; blockNumber <= range.end; blockNumber++) {
       blockPromises.push(web3.eth.getBlock(blockNumber, true));
     }
 
-    // Fetch blocks in the current batch
     const blocks = await Promise.all(blockPromises);
 
-    // Extract transactions for the given address
     blocks.forEach(block => {
       if (block && block.transactions) {
         transactions.push(...filterTransactions(block.transactions, address));
       }
     });
 
-    // Stop fetching if we already have enough transactions
     if (transactions.length >= limit + offset) break;
   }
 
-  // Apply pagination to the transactions
   return paginate(transactions, offset, limit);
 };
 
 /**
- * Filters transactions that match the given address (either as sender or receiver).
+ * Filters transactions that match the given address.
  */
 const filterTransactions = (transactions, address) =>
   transactions
@@ -94,7 +85,7 @@ const filterTransactions = (transactions, address) =>
       from: tx.from,
       to: tx.to,
       value: web3.utils.fromWei(tx.value, 'ether'),
-      timestamp: tx.timestamp || null, // Ensure timestamp is included
+      timestamp: tx.timestamp || null,
       tokenType: tx.input === '0x' ? 'Native' : 'ERC-20',
     }));
 

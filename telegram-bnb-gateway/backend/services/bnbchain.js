@@ -40,4 +40,16 @@ const fetchBalance = async (walletAddress, tokenAddress = null) => {
   }
 };
 
-module.exports = fetchBalance;
+// API-Compatible Function for Wallet Routes
+const getBalance = async (req, res) => {
+  try {
+    const { address } = req.params;
+    const tokenAddress = req.query.token || null; // Optional token address from query
+    const balance = await fetchBalance(address, tokenAddress);
+    res.json({ address, balance });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch balance' });
+  }
+};
+
+module.exports = { getBalance };
