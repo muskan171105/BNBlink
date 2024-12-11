@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNBLINK</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: black;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .container {
+      text-align: center;
+      color: white;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 30px rgba(0, 255, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #32CD32;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #2eb82e;
+    }
+
+    .secondary-text {
+      margin-top: 25px;
+      font-size: 1rem;
+    }
+
+    .secondary-text a {
+      color: #32CD32;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .secondary-text a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <video autoplay loop muted>
+    <source src="video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="container">
+    <h1>WELCOME TO BNBLINK!!</h1>
+    <p>Do your transactions securely</p>
+    <input type="text" placeholder="Enter Wallet Address">
+    <button>CONNECT WALLET</button>
+    <p class="secondary-text" style="margin-top: 25px; margin-bottom: 0;">Don't have one?</p>
+    <button>CREATE WALLET</button>
+  </div>
+</body>
+</html>

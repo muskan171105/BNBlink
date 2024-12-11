@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNBLINK - Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      background: black;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      width: 70%;
+      height: 60%;
+      background: rgba(0, 0, 0, 0.8);
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 4px 30px rgba(0, 255, 0, 0.5);
+      z-index: 1;
+    }
+
+    .task-pane {
+      width: 20%;
+      background: rgba(0, 0, 0, 0.9);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .task-pane button {
+      background: #32CD32;
+      color: black;
+      width: 100%;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .task-pane button:hover {
+      background: #2eb82e;
+    }
+
+    .content-area {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .content-area h2 {
+      margin: 0;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <video autoplay loop muted>
+    <source src="video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="container">
+    <div class="task-pane">
+      <button onclick="loadContent('SetAlert')">Set Alert</button>
+      <button onclick="loadContent('MarketAnalysis')">Market Analysis</button>
+      <button onclick="loadContent('TransactionHistory')">Transaction History</button>
+      <button onclick="loadContent('TransferTokens')">Transfer Tokens</button>
+    </div>
+    <div class="content-area" id="content-area">
+      <h2>Welcome to BNBLINK Dashboard</h2>
+      <p>Select an option from the left to view specific functionalities.</p>
+    </div>
+  </div>
+
+  <script>
+    function loadContent(page) {
+      const contentArea = document.getElementById('content-area');
+      if (page === 'SetAlert') {
+        contentArea.innerHTML = '<h2>Set Alert</h2><p>Set custom alerts for market changes here.</p>';
+      } else if (page === 'MarketAnalysis') {
+        contentArea.innerHTML = '<h2>Market Analysis</h2><p>View detailed market trends and analysis.</p>';
+      } else if (page === 'TransactionHistory') {
+        contentArea.innerHTML = '<h2>Transaction History</h2><p>Review all your past transactions.</p>';
+      } else if (page === 'TransferTokens') {
+        contentArea.innerHTML = '<h2>Transfer Tokens</h2><p>Initiate token transfers securely.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
