@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BNBLINK - Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       margin: 0;
@@ -74,6 +75,30 @@
       padding-bottom: 10px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+    }
+
+    .card p {
+      margin: 5px 0;
+    }
+
+    .profile-section {
+      margin-bottom: 20px;
+    }
+
+    .profile-section p {
+      margin: 5px 0;
+    }
+
+    canvas {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -83,10 +108,12 @@
   </video>
   <div class="container">
     <div class="task-pane">
+      <button onclick="loadContent('Profile')">Profile</button>
       <button onclick="loadContent('SetAlert')">Set Alert</button>
       <button onclick="loadContent('MarketAnalysis')">Market Analysis</button>
       <button onclick="loadContent('TransactionHistory')">Transaction History</button>
       <button onclick="loadContent('TransferTokens')">Transfer Tokens</button>
+      <button onclick="alert('Buy/Sell functionality is Coming Soon!')">Buy/Sell Tokens (Coming Soon)</button>
     </div>
     <div class="content-area" id="content-area">
       <h2>Welcome to BNBLINK Dashboard</h2>
@@ -95,17 +122,168 @@
   </div>
 
   <script>
-    function loadContent(page) {
-      const contentArea = document.getElementById('content-area');
-      if (page === 'SetAlert') {
-        contentArea.innerHTML = '<h2>Set Alert</h2><p>Set custom alerts for market changes here.</p>';
-      } else if (page === 'MarketAnalysis') {
-        contentArea.innerHTML = '<h2>Market Analysis</h2><p>View detailed market trends and analysis.</p>';
-      } else if (page === 'TransactionHistory') {
-        contentArea.innerHTML = '<h2>Transaction History</h2><p>Review all your past transactions.</p>';
-      } else if (page === 'TransferTokens') {
-        contentArea.innerHTML = '<h2>Transfer Tokens</h2><p>Initiate token transfers securely.</p>';
+    let marketData = null;
+    let marketDataInterval;
+    const contentArea = document.getElementById('content-area');
+
+    async function fetchBNBMarketData() {
+      try {
+        const response = await fetch('http://localhost:3000/market/bnb');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching BNB market data:', error);
+        return { success: false };
       }
+    }
+
+    async function loadContent(page) {
+      clearInterval(marketDataInterval);
+
+      switch (page) {
+        case 'Profile':
+          renderProfilePage();
+          break;
+
+        case 'SetAlert':
+          renderBasicPage('Set Alert', 'Set custom alerts for market changes here.');
+          break;
+
+        case 'MarketAnalysis':
+          renderMarketAnalysisPage();
+          marketDataInterval = setInterval(updateMarketAnalysis, 40000); // Set to 40 sec (40000 ms)
+          if (!marketData) {
+            updateMarketAnalysis(); // Initial call to fetch data immediately
+          }
+          break;
+
+        case 'TransactionHistory':
+          renderBasicPage('Transaction History', 'Review all your past transactions.');
+          break;
+
+        case 'TransferTokens':
+          renderTransferTokensPage();
+          break;
+
+        default:
+          renderBasicPage('Error', 'Invalid option selected.');
+      }
+    }
+
+    function renderBasicPage(title, description) {
+      contentArea.innerHTML = `<h2>${title}</h2><p>${description}</p>`;
+    }
+
+    function renderProfilePage() {
+      contentArea.innerHTML = `
+        <h2>Profile</h2>
+        <div class="profile-section">
+          <p><strong>Wallet Address:</strong> 0x1234567890abcdef1234567890abcdef12345678</p>
+          <p><strong>Private Key:</strong> 0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef</p>
+        </div>
+      `;
+    }
+
+    function renderMarketAnalysisPage() {
+      contentArea.innerHTML = '<h2>Market Analysis</h2>';
+
+      if (marketData) {
+        displayMarketData(marketData);
+      } else {
+        contentArea.innerHTML += '<p>Loading market data...</p>';
+      }
+    }
+
+    async function updateMarketAnalysis() {
+      const data = await fetchBNBMarketData();
+
+      if (data.success) {
+        marketData = data.data;
+        displayMarketData(marketData);
+      } else {
+        contentArea.innerHTML += '<p>Failed to load market data. Please try again later.</p>';
+      }
+    }
+
+    function displayMarketData(data) {
+      const { price, marketCap, volume, change24h } = data;
+
+      contentArea.innerHTML = ` 
+        <h2>Market Analysis</h2>
+        <div class="card">
+          <h3>BNB Market Data</h3>
+          <p><strong>Price:</strong> $${price}</p>
+          <p><strong>Market Cap:</strong> $${marketCap}</p>
+          <p><strong>24h Volume:</strong> $${volume}</p>
+          <p><strong>24h Change:</strong> ${change24h}%</p>
+        </div>
+        <canvas id="bnbChart"></canvas>
+      `;
+      displayChart(price);
+    }
+
+    function displayChart(price) {
+      const chartCanvas = document.getElementById('bnbChart').getContext('2d');
+
+      const chartData = {
+        labels: ['Price'],
+        datasets: [
+          {
+            label: 'BNB Price in USD',
+            data: [price],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            fill: true,
+          },
+        ],
+      };
+
+      if (window.bnbChart) {
+        window.bnbChart.data.datasets[0].data = [price];
+        window.bnbChart.update();
+      } else {
+        window.bnbChart = new Chart(chartCanvas, {
+          type: 'line',
+          data: chartData,
+          options: { responsive: true, scales: { y: { beginAtZero: false } } },
+        });
+      }
+    }
+
+    function renderTransferTokensPage() {
+      contentArea.innerHTML = `
+        <h2>Transfer Tokens</h2>
+        <div class="card">
+          <h3>Transfer Tokens</h3>
+          <form id="transfer-form">
+            <label for="to-address">Recipient Address:</label>
+            <input type="text" id="to-address" required><br><br>
+            <label for="amount">Amount to Transfer:</label>
+            <input type="number" id="amount" required><br><br>
+            <button type="submit">Transfer</button>
+          </form>
+        </div>
+        <div id="transfer-status"></div>
+      `;
+
+      const form = document.getElementById('transfer-form');
+      form.addEventListener('submit', handleTransfer);
+    }
+
+    function handleTransfer(event) {
+      event.preventDefault();
+
+      const toAddress = document.getElementById('to-address').value;
+      const amount = document.getElementById('amount').value;
+
+      const statusDiv = document.getElementById('transfer-status');
+      statusDiv.innerHTML = `<p>Transfer in process... ${amount} BNB to ${toAddress}.</p>`;
+
+      setTimeout(() => {
+        statusDiv.innerHTML = `<p>Transfer successful! ${amount} BNB sent to ${toAddress}.</p>`;
+      }, 2000);
     }
   </script>
 </body>

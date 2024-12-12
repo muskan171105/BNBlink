@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');  // Import CORS package
 const dotenv = require('dotenv');
 const walletRoutes = require('./routes/wallet');
 const transactionRoutes = require('./routes/transaction');
@@ -12,7 +13,9 @@ const { performMarketAnalysis } = require('./routes/marketAnalysis'); // Market 
 const { getTransactionHistory } = require('./routes/transaction'); // Transaction history service
 const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Alerts subscription services
 const { authenticate } = require('./authentication'); // Authentication middleware
-const jwt=require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+const socketIo = require('socket.io'); // Import socket.io for real-time communication
+const { analyzeBNBMarket }=require('./services/marketAnalysisService');
 
 // Load environment variables
 dotenv.config();
@@ -33,18 +36,19 @@ app.use(express.json());
 // Custom middleware for logging
 app.use(logger);
 
+// Enable CORS for all routes
+app.use(cors());
+
 /**
  * Apply authentication middleware globally
  * Ensure authentication is applied only to routes requiring it
  */
-app.use('/wallet', authenticate); // Apply to wallet routes
 app.use('/transaction', authenticate); // Apply to transaction routes
 app.use('/transfer', authenticate); // Apply to transfer routes
-app.use('/market', authenticate); // Apply to market analysis routes
 app.use('/alerts', authenticate); // Apply to alerts routes
 
 /**
- * Route to fetch the balance of a wallet address using the bnbchain service.
+ * Route to fetch the balance of a wallet address using the wallet route.
  */
 app.get('/wallet/balance/:address', async (req, res) => {
   const { address } = req.params;
@@ -131,14 +135,12 @@ app.post('/login', (req, res) => {
     // Generate a token (use a strong secret from your .env file)
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Log the generated token for debugging purposes
-    console.log('Generated Token for user', username, ':', token);
-
     res.json({ token });
   } else {
     res.status(401).json({ error: 'Invalid username or password' });
   }
 });
+
 // Register route modules
 app.use('/wallet', walletRoutes); // Routes for wallet-related operations
 app.use('/transaction', transactionRoutes); // Routes for transaction-related operations
