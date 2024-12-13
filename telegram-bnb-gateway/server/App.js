@@ -15,15 +15,20 @@ const { subscribeAlerts, unsubscribeAlerts } = require('./routes/alerts'); // Al
 const { authenticate } = require('./authentication'); // Authentication middleware
 const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io'); // Import socket.io for real-time communication
-const { analyzeBNBMarket }=require('./services/marketAnalysisService');
+const { analyzeBNBMarket } = require('./services/marketAnalysisService');
 
 // Load environment variables
 dotenv.config();
 
+console.log('JWT_SECRET:', process.env.JWT_SECRET); // Should print your JWT secret
+console.log('RPC_URL:', process.env.RPC_URL);       // Should print the RPC URL
+console.log('WALLET_ADDRESS:', process.env.WALLET_ADDRESS); // Should print the wallet address
+
+
 // Validate critical environment variables
-if (!process.env.JWT_SECRET || !process.env.RPC_URL) {
+if (!process.env.JWT_SECRET || !process.env.RPC_URL || !process.env.WALLET_ADDRESS) {
   throw new Error(
-    'Critical environment variables missing: Ensure JWT_SECRET and RPC_URL are set in your .env file.'
+    'Critical environment variables missing: Ensure JWT_SECRET, RPC_URL, and WALLET_ADDRESS are set in your .env file.'
   );
 }
 
@@ -121,6 +126,57 @@ app.post('/alerts/unsubscribe', async (req, res) => {
   }
 });
 
+// Route to handle token transfer
+app.post('/transfer', async (req, res) => {
+  const { toAddress, amount, fromAddress, privateKey } = req.body;
+
+  // Check if all required fields are provided
+  if (!toAddress || !amount || !fromAddress || !privateKey) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // Fetch contract address and ABI from environment variables
+    const contractAddress = process.env.RELAYER_ADDRESS;
+    const contractABI = JSON.parse(process.env.RELAYER_ABI);
+
+    // Set up Web3 and contract instance
+    const Web3 = require('web3');
+    const web3 = new Web3(process.env.RPC_URL);
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+    // Create the transaction object
+    const transaction = contract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')); // Adjust 'ether' if using another token
+
+    // Estimate gas for the transaction
+    const gas = await transaction.estimateGas({ from: fromAddress });
+    const gasPrice = await web3.eth.getGasPrice();
+
+    // Sign the transaction using the private key
+    const signedTransaction = await web3.eth.accounts.signTransaction(
+      {
+        to: contractAddress,
+        data: transaction.encodeABI(),
+        gas,
+        gasPrice,
+      },
+      privateKey
+    );
+
+    // Send the transaction
+    const receipt = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+
+    // Return success response
+    res.status(200).json({
+      message: `Successfully transferred ${amount} tokens to ${toAddress}`,
+      transactionHash: receipt.transactionHash,
+    });
+  } catch (error) {
+    console.error('Error during token transfer:', error);
+    res.status(500).json({ error: 'Internal server error during token transfer' });
+  }
+});
+
 // Example login route to generate a token
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -129,7 +185,7 @@ app.post('/login', (req, res) => {
   if (username === 'testuser' && password === 'password123') {
     const payload = {
       username,
-      walletAddress: '0xDe9f03c92a153e677C3b9c76309542358B2b6aF2', // Replace with actual wallet address
+      walletAddress: process.env.WALLET_ADDRESS, // Use wallet address from the .env file
     };
 
     // Generate a token (use a strong secret from your .env file)

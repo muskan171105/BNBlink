@@ -1,12 +1,10 @@
-const web3 = require('../utils/web3Utils');
+const Web3 = require('web3');
+const { metatxrelayerABI, metatxrelayerAddress } = require('../config');  // Update with your ABI and contract address
+const web3 = new Web3(process.env.RPC_URL || 'https://bsc-dataseed.binance.org/');
 
-/**
- * Controller to handle fund transfers between wallet addresses.
- * @param {Object} req - Express request object containing transfer details.
- * @param {Object} res - Express response object for sending the transfer status.
- */
-const transferFunds = async (req, res) => {
-  const { from, to, amount, privateKey } = req.body;
+// Function to handle gasless transfer via metatxrelayer contract
+const transferFunds = async (req, res) => { 
+  const { from, to, amount, signedMessage, tokenContractAddress } = req.body;
 
   try {
     // Validate the provided addresses and amount
@@ -17,26 +15,46 @@ const transferFunds = async (req, res) => {
       return res.status(400).json({ error: 'Invalid transfer amount.' });
     }
 
-    // Convert the transfer amount to Wei
-    const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
+    // Set up the metatxrelayer contract
+    const metaTxRelayer = new web3.eth.Contract(metatxrelayerABI, metatxrelayerAddress);
 
-    // Build the transaction object
-    const txObject = {
-      from,
-      to,
-      value: amountInWei,
-      gas: 21000, // Set the gas limit for a simple transfer
+    // Encode the transfer call data (either for BEP-20 or native BNB)
+    let transferData;
+    if (tokenContractAddress) {
+      // BEP-20 Token Transfer
+      const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenContractAddress);
+      transferData = tokenContract.methods.transfer(to, web3.utils.toWei(amount, 'ether')).encodeABI();
+    } else {
+      // Native BNB Transfer
+      transferData = web3.eth.abi.encodeFunctionCall({
+        name: 'transfer',
+        type: 'function',
+        inputs: [
+          { type: 'address', name: 'to' },
+          { type: 'uint256', name: 'value' },
+        ],
+      }, [to, web3.utils.toWei(amount, 'ether')]);
+    }
+
+    // Prepare the data for the metatxrelayer to process the relayed transaction
+    const gasPrice = await web3.eth.getGasPrice();  // Or use a fixed gas price if necessary
+    const relayData = {
+      from,  // The sender address
+      to: metatxrelayerAddress,  // The relayer contract address
+      data: transferData,
+      gas: 21000,  // Set appropriate gas limit based on transaction type
+      gasPrice: gasPrice,
+      nonce: await web3.eth.getTransactionCount(from, 'latest'),
+      signedMessage,  // The signed message (relayer will execute on behalf of the user)
     };
 
-    // Sign the transaction
-    const signedTx = await web3.eth.accounts.signTransaction(txObject, privateKey);
-
-    // Send the transaction
+    // Send the relay transaction to the metatxrelayer contract
+    const signedTx = await web3.eth.accounts.signTransaction(relayData, process.env.RELAYER_PRIVATE_KEY);  // Relayer's private key
     const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
 
     // Respond with the transaction receipt
     res.json({
-      message: 'Transfer successful',
+      message: 'Gasless transfer successful',
       transactionHash: receipt.transactionHash,
       blockNumber: receipt.blockNumber,
       gasUsed: receipt.gasUsed,

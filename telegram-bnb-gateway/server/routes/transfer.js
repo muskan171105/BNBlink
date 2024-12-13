@@ -1,85 +1,77 @@
+// routes/transferTokensRouter.js
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const Web3 = require('web3');
-
 const router = express.Router();
+const Web3 = require('web3');
+require('dotenv').config();
 
-// Use BNB-compatible RPC URL
-const web3 = new Web3(process.env.RPC_URL || 'https://bsc-dataseed.binance.org/');
+// Web3 setup (you can adjust this depending on your network setup)
+const web3 = new Web3('https://your-infura-or-other-web3-provider-url');
 
-const ERC20_ABI = [
-  {
-    constant: false,
-    inputs: [
-      { name: "_to", type: "address" },
-      { name: "_value", type: "uint256" }
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    type: "function"
-  },
-  {
-    constant: true,
-    inputs: [{ name: "_owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ name: "balance", type: "uint256" }],
-    type: "function"
+// Route to fetch contract address and ABI
+router.get('/contract-info', (req, res) => {
+  try {
+    // Fetch contract address and ABI from environment variables
+    const contractAddress = process.env.RELAYER_ADDRESS;
+    const contractABI = JSON.parse(process.env.RELAYER_ABI);
+
+    // Send the data to the frontend
+    res.json({
+      address: contractAddress,
+      abi: contractABI,
+    });
+  } catch (error) {
+    console.error('Error fetching contract info:', error);
+    res.status(500).json({ error: 'Failed to fetch contract info' });
   }
-];
+});
 
-// Token Transfer API for BNB Chain
-router.post(
-  '/transfer',
-  [
-    body('senderAddress').isString().notEmpty(),
-    body('recipientAddress').isString().notEmpty(),
-    body('amount').isString().notEmpty(),
-    body('tokenContractAddress').optional().isString(),
-    body('signedTransaction').isString().notEmpty() // Signed transaction from the frontend
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
+// Route to handle token transfer
+router.post('/transfer', async (req, res) => {
+  const { toAddress, amount, fromAddress, privateKey } = req.body;
 
-    try {
-      const { senderAddress, amount, tokenContractAddress, signedTransaction } = req.body;
-      const transferAmount = web3.utils.toBN(amount);
-
-      // If a token contract address is provided, check the BEP-20 balance
-      if (tokenContractAddress) {
-        const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenContractAddress);
-        const balance = await tokenContract.methods.balanceOf(senderAddress).call();
-
-        if (web3.utils.toBN(balance).lt(transferAmount)) {
-          return res.status(400).json({
-            error: 'Insufficient token balance'
-          });
-        }
-      } else {
-        // For BNB transfer, check the BNB balance
-        const balance = await web3.eth.getBalance(senderAddress);
-
-        if (web3.utils.toBN(balance).lt(transferAmount)) {
-          return res.status(400).json({
-            error: 'Insufficient BNB balance'
-          });
-        }
-      }
-
-      // Broadcast the signed transaction
-      const receipt = await web3.eth.sendSignedTransaction(signedTransaction);
-
-      res.json({
-        message: 'Transaction successful',
-        transactionHash: receipt.transactionHash
-      });
-    } catch (error) {
-      console.error('Error processing transaction:', error.message);
-      res.status(500).json({ error: error.message });
-    }
+  // Check if all required fields are provided
+  if (!toAddress || !amount || !fromAddress || !privateKey) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
-);
+
+  try {
+    // Fetch contract address and ABI from environment variables
+    const contractAddress = process.env.RELAYER_ADDRESS;
+    const contractABI = JSON.parse(process.env.RELAYER_ABI);
+
+    // Set up the contract using Web3
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+    // Create the transaction object
+    const transaction = contract.methods.transfer(toAddress, web3.utils.toWei(amount, 'ether')); // Assuming transfer is in ETH, you can adjust for your token type
+
+    // Estimate gas for the transaction
+    const gas = await transaction.estimateGas({ from: fromAddress });
+    const gasPrice = await web3.eth.getGasPrice();
+
+    // Sign the transaction using the private key
+    const signedTransaction = await web3.eth.accounts.signTransaction(
+      {
+        to: contractAddress,
+        data: transaction.encodeABI(),
+        gas,
+        gasPrice,
+      },
+      privateKey
+    );
+
+    // Send the transaction
+    const receipt = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
+
+    // Return success response
+    res.status(200).json({
+      message: `Successfully transferred ${amount} tokens to ${toAddress}`,
+      transactionHash: receipt.transactionHash,
+    });
+  } catch (error) {
+    console.error('Error during token transfer:', error);
+    res.status(500).json({ error: 'Internal server error during token transfer' });
+  }
+});
 
 module.exports = router;
